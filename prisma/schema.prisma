@@ -20,6 +20,7 @@ model User {
   email         String  @unique
   password      String
   phone         String?
+  orgId         Organisation[]
   organisations UserOrganisation[]
 }
 
@@ -27,14 +28,16 @@ model Organisation {
   id          String    @default(uuid()) @id
   name        String
   description String?
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
   users       UserOrganisation[]
 }
 
 model UserOrganisation {
   userId        String
-  organisationId String
+  orgId         String
   user          User            @relation(fields: [userId], references: [id])
-  organisation  Organisation    @relation(fields: [organisationId], references: [id])
+  organisation  Organisation    @relation(fields: [orgId], references: [id])
   
-  @@id([userId, organisationId])
+  @@id([userId, orgId])
 }
