@@ -23,6 +23,25 @@ export class AuthService {
         },
       });
 
+      // Create the organization
+      const organisation = await this.prismaService.organisation.create({
+        data: {
+          name: `${dto.firstName}'s Organisation`,
+          description: '',
+          author: {
+            connect: { id: user.id }, // Connect the user as the author
+          },
+        },
+      });
+
+      // Link the user to the organization
+      await this.prismaService.userOrganisation.create({
+        data: {
+          userId: user.id,
+          orgId: organisation.id,
+        },
+      });
+
       const token = await this.signToken(user.id, user.email);
 
       return {
