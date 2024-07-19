@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { OrganisationDto } from './dto/org.dto';
 
@@ -8,7 +8,7 @@ export class OrganisationService {
 
   async create(authorId: string, dto: OrganisationDto) {
     try {
-      const orgData = await this.prismaService.organisation.create({
+      const data = await this.prismaService.organisation.create({
         data: {
           authorId,
           ...dto,
@@ -18,7 +18,7 @@ export class OrganisationService {
       await this.prismaService.userOrganisation.create({
         data: {
           userId: authorId,
-          orgId: orgData.id,
+          orgId: data.id,
         },
       });
 
@@ -26,25 +26,18 @@ export class OrganisationService {
         status: 'success',
         message: 'Organisation created successfully',
         data: {
-          orgId: orgData.id,
-          name: orgData.name,
-          description: orgData.description,
+          orgId: data.id,
+          name: data.name,
+          description: data.description,
         },
       };
     } catch (error) {
-      throw new HttpException(
-        {
-          status: 'Bad request',
-          message: 'Client error',
-          statusCode: 400,
-        },
-        400,
-      );
+      throw new InternalServerErrorException(error);
     }
   }
 
   async findAll(userId: string) {
-    const orgData = await this.prismaService.organisation.findMany({
+    const data = await this.prismaService.organisation.findMany({
       where: {
         users: {
           some: {
@@ -63,7 +56,7 @@ export class OrganisationService {
       status: 'success',
       message: 'Organisation record',
       data: {
-        organisations: orgData,
+        organisations: data,
       },
     };
   }
@@ -75,7 +68,7 @@ export class OrganisationService {
       },
     });
 
-    const orgData = await this.prismaService.organisation.findUnique({
+    const data = await this.prismaService.organisation.findUnique({
       where: { id: orgId },
     });
 
@@ -83,9 +76,9 @@ export class OrganisationService {
       status: 'success',
       message: 'Organisation record',
       data: {
-        orgId: orgData.id,
-        name: orgData.name,
-        description: orgData.description,
+        orgId: data.id,
+        name: data.name,
+        description: data.description,
       },
     };
   }

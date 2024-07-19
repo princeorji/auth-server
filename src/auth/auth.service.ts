@@ -1,9 +1,10 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma.service';
 import { LogInDto, RegisterDto } from './dto/auth.dto';
 import * as argon from 'argon2';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class AuthService {
@@ -59,14 +60,10 @@ export class AuthService {
         },
       };
     } catch (error) {
-      throw new HttpException(
-        {
-          status: 'Bad request',
-          message: 'Registration unsuccessful',
-          statusCode: 400,
-        },
-        400,
-      );
+      if (error instanceof PrismaClientKnownRequestError) {
+        throw new ForbiddenException('Credentials taken');
+      }
+      throw error;
     }
   }
 
@@ -95,14 +92,9 @@ export class AuthService {
         },
       };
     } catch (error) {
-      throw new HttpException(
-        {
-          status: 'Bad request',
-          message: 'Authentication failed',
-          statusCode: 401,
-        },
-        401,
-      );
+      if (error.code == 'P2025')
+        throw new ForbiddenException('Incorrect Credentials');
+      throw error;
     }
   }
 

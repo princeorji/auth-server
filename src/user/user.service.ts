@@ -6,24 +6,20 @@ export class UserService {
   constructor(private prismaService: PrismaService) {}
 
   async findOne(id: string) {
-    try {
-      const user = await this.prismaService.user.findUnique({
-        where: { id },
-      });
+    const user = await this.prismaService.user.findUnique({
+      where: { id },
+    });
 
-      return {
-        status: 'success',
-        message: 'User record',
-        data: {
-          userId: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          phone: user.phone,
-        },
-      };
-    } catch (error) {
-      throw error;
-    }
+    return {
+      status: 'success',
+      message: 'User record',
+      data: {
+        userId: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+      },
+    };
   }
 }
