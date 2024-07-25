@@ -15,13 +15,6 @@ export class OrganisationService {
         },
       });
 
-      await this.prismaService.userOrganisation.create({
-        data: {
-          userId: authorId,
-          orgId: data.id,
-        },
-      });
-
       return {
         status: 'success',
         message: 'Organisation created successfully',
