@@ -22,6 +22,8 @@ model User {
   phone         String?
   orgId         Organisation[]
   organisations UserOrganisation[]
+
+  @@map("users")
 }
 
 model Organisation {
@@ -31,6 +33,8 @@ model Organisation {
   authorId    String
   author      User      @relation(fields: [authorId], references: [id])
   users       UserOrganisation[]
+
+  @@map("organisations")
 }
 
 model UserOrganisation {
@@ -40,4 +44,5 @@ model UserOrganisation {
   organisation  Organisation    @relation(fields: [orgId], references: [id])
   
   @@id([userId, orgId])
+  @@map("user_organisations")
 }

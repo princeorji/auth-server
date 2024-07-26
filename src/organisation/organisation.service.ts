@@ -75,4 +75,26 @@ export class OrganisationService {
       },
     };
   }
+
+  async addUser(authorId: string, orgId: string, userId: string) {
+    await this.prismaService.organisation.findUnique({
+      where: { id: orgId },
+    });
+
+    try {
+      await this.prismaService.userOrganisation.create({
+        data: {
+          userId,
+          orgId,
+        },
+      });
+
+      return {
+        status: 'success',
+        message: 'User added to the organisation successfully',
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
 }
