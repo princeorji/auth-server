@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma.service';
-import { LogInDto, RegisterDto } from './dto/auth.dto';
+import { LogInDto, PwdDto, RegisterDto } from './dto/auth.dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
@@ -65,7 +65,10 @@ export class AuthService {
         where: { email: dto.email },
       });
 
-      await argon.verify(user.password, dto.password);
+      const isCorrectPassword = await argon.verify(user.password, dto.password);
+
+      if (!isCorrectPassword)
+        throw new ForbiddenException('Incorrect Credentials');
 
       const token = await this.signToken(user.id, user.email);
 
@@ -82,6 +85,32 @@ export class AuthService {
             phone: user.phone,
           },
         },
+      };
+    } catch (error) {
+      if (error.code == 'P2025')
+        throw new ForbiddenException('Incorrect Credentials');
+      throw error;
+    }
+  }
+
+  async changePwd(dto: PwdDto, userId: string) {
+    try {
+      const user = await this.prismaService.user.findUnique({
+        where: { id: userId },
+      });
+
+      await argon.verify(user.password, dto.oldPassword);
+
+      const newPassword = await argon.hash(dto.newPassword);
+
+      await this.prismaService.user.update({
+        where: { id: userId },
+        data: { password: newPassword },
+      });
+
+      return {
+        status: 'success',
+        message: 'Password changed successfully',
       };
     } catch (error) {
       if (error.code == 'P2025')

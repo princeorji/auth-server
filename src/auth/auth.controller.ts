@@ -1,12 +1,15 @@
 import {
   Body,
   Controller,
+  Param,
   Post,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LogInDto, RegisterDto } from './dto/auth.dto';
+import { LogInDto, PwdDto, RegisterDto } from './dto/auth.dto';
+import { AuthGuard } from './guard/auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -22,5 +25,12 @@ export class AuthController {
   @UsePipes(new ValidationPipe())
   login(@Body() dto: LogInDto) {
     return this.authService.login(dto);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post(':id')
+  @UsePipes(new ValidationPipe())
+  changePwd(@Body() dto: PwdDto, @Param('id') id: string) {
+    return this.authService.changePwd(dto, id);
   }
 }

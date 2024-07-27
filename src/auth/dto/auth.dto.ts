@@ -30,3 +30,15 @@ export class RegisterDto extends LogInDto {
   @IsString()
   phone?: string;
 }
+
+export class PwdDto {
+  @IsString()
+  @IsNotEmpty({ message: 'Password must not be null' })
+  @MinLength(6)
+  oldPassword: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Password must not be null' })
+  @MinLength(6)
+  newPassword: string;
+}
