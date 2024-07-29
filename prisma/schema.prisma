@@ -22,6 +22,8 @@ model User {
   phone         String?
   orgId         Organisation[]
   organisations UserOrganisation[]
+  resetPwdToken String?
+  resetPwdExp   DateTime?
 
   @@map("users")
 }

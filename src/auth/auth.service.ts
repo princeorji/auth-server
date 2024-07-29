@@ -5,6 +5,8 @@ import { PrismaService } from 'src/prisma.service';
 import { LogInDto, PwdDto, RegisterDto } from './dto/auth.dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { v4 as uuidv4 } from 'uuid';
+import { MailService } from 'src/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -12,6 +14,7 @@ export class AuthService {
     private prismaService: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
+    private mailService: MailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -112,6 +115,38 @@ export class AuthService {
         status: 'success',
         message: 'Password changed successfully',
       };
+    } catch (error) {
+      if (error.code == 'P2025')
+        throw new ForbiddenException('Incorrect Credentials');
+      throw error;
+    }
+  }
+
+  async forgotPwd(email: string) {
+    try {
+      const user = await this.prismaService.user.findUnique({
+        where: { email: email },
+      });
+
+      if (!user) throw new ForbiddenException('Incorrect Credentials');
+
+      const resetToken = uuidv4();
+
+      user.resetPwdToken = resetToken;
+      user.resetPwdExp = new Date(Date.now(), 1); // 1 hour from now
+
+      await this.prismaService.user.update({
+        where: { id: user.id },
+        data: {
+          resetPwdToken: user.resetPwdToken,
+          resetPwdExp: user.resetPwdExp,
+        },
+      });
+
+      // Send the reset email
+      await this.mailService.sendPwdResetEmail(user.email, resetToken);
+
+      return { message: 'Password reset email sent' };
     } catch (error) {
       if (error.code == 'P2025')
         throw new ForbiddenException('Incorrect Credentials');

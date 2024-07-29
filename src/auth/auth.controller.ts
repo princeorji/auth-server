@@ -3,6 +3,7 @@ import {
   Controller,
   Param,
   Post,
+  Put,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -28,9 +29,14 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
-  @Post(':id')
+  @Put(':id')
   @UsePipes(new ValidationPipe())
   changePwd(@Body() dto: PwdDto, @Param('id') id: string) {
     return this.authService.changePwd(dto, id);
+  }
+
+  @Post('forgot-password')
+  forgotPwd(@Body('email') email: string) {
+    return this.authService.forgotPwd(email);
   }
 }
