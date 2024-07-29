@@ -9,7 +9,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LogInDto, PwdDto, RegisterDto } from './dto/auth.dto';
+import { LogInDto, PwdDto, RegisterDto, resetPwdDto } from './dto/auth.dto';
 import { AuthGuard } from './guard/auth.guard';
 
 @Controller('auth')
@@ -38,5 +38,11 @@ export class AuthController {
   @Post('forgot-password')
   forgotPwd(@Body('email') email: string) {
     return this.authService.forgotPwd(email);
+  }
+
+  @Put('reset-password')
+  @UsePipes(new ValidationPipe())
+  resetPwd(@Body() dto: resetPwdDto) {
+    return this.authService.resetPwd(dto.newPassword, dto.resetToken);
   }
 }

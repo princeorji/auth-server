@@ -42,3 +42,13 @@ export class PwdDto {
   @MinLength(6)
   newPassword: string;
 }
+
+export class resetPwdDto {
+  @IsString()
+  resetToken: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Password must not be null' })
+  @MinLength(6)
+  newPassword: string;
+}

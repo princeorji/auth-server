@@ -156,6 +156,30 @@ export class AuthService {
     }
   }
 
+  async resetPwd(newPassword: string, resetToken: string) {
+    try {
+      const user = await this.prismaService.user.findFirst({
+        where: { resetPwdToken: resetToken, resetPwdExp: { gte: new Date() } },
+      });
+
+      if (!user) {
+        throw new ForbiddenException('Invalid or expired reset token');
+      }
+
+      const password = await argon.hash(newPassword);
+      await this.prismaService.user.update({
+        where: { id: user.id },
+        data: {
+          password: password,
+        },
+      });
+
+      return { message: 'Password reset successfully' };
+    } catch (error) {
+      throw new ForbiddenException(error);
+    }
+  }
+
   private async signToken(
     userId: string,
     email: string,
