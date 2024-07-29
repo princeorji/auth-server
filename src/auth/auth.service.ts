@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma.service';
@@ -91,7 +95,7 @@ export class AuthService {
       };
     } catch (error) {
       if (error.code == 'P2025')
-        throw new ForbiddenException('Incorrect Credentials');
+        throw new ForbiddenException('An error occurred during login');
       throw error;
     }
   }
@@ -101,8 +105,10 @@ export class AuthService {
       const user = await this.prismaService.user.findUnique({
         where: { id: userId },
       });
+      if (!user) throw new NotFoundException('User not found');
 
-      await argon.verify(user.password, dto.oldPassword);
+      const isOldPassword = await argon.verify(user.password, dto.oldPassword);
+      if (!isOldPassword) throw new ForbiddenException('Incorrect Credentials');
 
       const newPassword = await argon.hash(dto.newPassword);
 
@@ -116,9 +122,7 @@ export class AuthService {
         message: 'Password changed successfully',
       };
     } catch (error) {
-      if (error.code == 'P2025')
-        throw new ForbiddenException('Incorrect Credentials');
-      throw error;
+      throw new ForbiddenException(error);
     }
   }
 
@@ -128,7 +132,7 @@ export class AuthService {
         where: { email: email },
       });
 
-      if (!user) throw new ForbiddenException('Incorrect Credentials');
+      if (!user) throw new NotFoundException('Email not registered');
 
       const resetToken = uuidv4();
 
@@ -148,9 +152,7 @@ export class AuthService {
 
       return { message: 'Password reset email sent' };
     } catch (error) {
-      if (error.code == 'P2025')
-        throw new ForbiddenException('Incorrect Credentials');
-      throw error;
+      throw new ForbiddenException(error);
     }
   }
 
