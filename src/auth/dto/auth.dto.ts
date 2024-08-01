@@ -31,18 +31,6 @@ export class RegisterDto extends LogInDto {
   phone?: string;
 }
 
-export class PwdDto {
-  @IsString()
-  @IsNotEmpty({ message: 'Password must not be null' })
-  @MinLength(6)
-  oldPassword: string;
-
-  @IsString()
-  @IsNotEmpty({ message: 'Password must not be null' })
-  @MinLength(6)
-  newPassword: string;
-}
-
 export class resetPwdDto {
   @IsString()
   resetToken: string;

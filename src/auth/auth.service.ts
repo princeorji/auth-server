@@ -6,7 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma.service';
-import { LogInDto, PwdDto, RegisterDto } from './dto/auth.dto';
+import { LogInDto, RegisterDto } from './dto/auth.dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { v4 as uuidv4 } from 'uuid';
@@ -97,32 +97,6 @@ export class AuthService {
       if (error.code == 'P2025')
         throw new ForbiddenException('An error occurred during login');
       throw error;
-    }
-  }
-
-  async changePwd(dto: PwdDto, userId: string) {
-    try {
-      const user = await this.prismaService.user.findUnique({
-        where: { id: userId },
-      });
-      if (!user) throw new NotFoundException('User not found');
-
-      const isOldPassword = await argon.verify(user.password, dto.oldPassword);
-      if (!isOldPassword) throw new ForbiddenException('Incorrect Credentials');
-
-      const newPassword = await argon.hash(dto.newPassword);
-
-      await this.prismaService.user.update({
-        where: { id: userId },
-        data: { password: newPassword },
-      });
-
-      return {
-        status: 'success',
-        message: 'Password changed successfully',
-      };
-    } catch (error) {
-      throw new ForbiddenException(error);
     }
   }
 

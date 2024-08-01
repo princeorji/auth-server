@@ -1,16 +1,13 @@
 import {
   Body,
   Controller,
-  Param,
   Post,
   Put,
-  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LogInDto, PwdDto, RegisterDto, resetPwdDto } from './dto/auth.dto';
-import { AuthGuard } from './guard/auth.guard';
+import { LogInDto, RegisterDto, resetPwdDto } from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -26,13 +23,6 @@ export class AuthController {
   @UsePipes(new ValidationPipe())
   login(@Body() dto: LogInDto) {
     return this.authService.login(dto);
-  }
-
-  @UseGuards(AuthGuard)
-  @Put(':id')
-  @UsePipes(new ValidationPipe())
-  changePwd(@Body() dto: PwdDto, @Param('id') id: string) {
-    return this.authService.changePwd(dto, id);
   }
 
   @Post('forgot-password')
